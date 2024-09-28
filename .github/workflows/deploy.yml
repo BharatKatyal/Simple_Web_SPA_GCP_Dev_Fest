@@ -1,4 +1,4 @@
-name: Deploy to GCP
+name: Deploy to GCP and Invalidate Cache
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
 
 env:
   BUCKET_NAME: myprepv2-devfes  # Your GCP bucket name
+  PROJECT_ID: github-actions-gcs  # Your GCP project ID
 
 jobs:
   deploy:
@@ -18,9 +19,16 @@ jobs:
       with:
         service_account_email: ${{ secrets.GCP_SA_EMAIL }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
-        project_id: github-actions-gcs
+        project_id: ${{ env.PROJECT_ID }}
 
     - name: Deploy via GCS
       run: |
         gsutil -m rm -rf gs://${{ env.BUCKET_NAME }}/* || echo "$?"
         gsutil -m cp -r public/* gs://${{ env.BUCKET_NAME }}/
+
+    - name: Invalidate CDN Cache
+      run: |
+        gcloud compute url-maps invalidate-cdn-cache ${{ env.BUCKET_NAME }} \
+          --path "/*" \
+          --async \
+          --project ${{ env.PROJECT_ID }}
