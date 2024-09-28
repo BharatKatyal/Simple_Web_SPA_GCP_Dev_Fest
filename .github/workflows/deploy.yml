@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  BUCKET_NAME: myprepv2-devfes  # Your GCP bucket name
+  BUCKET_NAME: ${{ secrets.BUCKET_NAME }} 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "deploy"
