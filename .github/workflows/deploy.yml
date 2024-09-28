@@ -5,36 +5,36 @@ on:
     branches:
       - main  # or your default branch name
 
+name: GCS Deployment
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
+on:
+  push:
+    branches: [ main ]
+
 env:
   BUCKET_NAME: myprepv2-devfes  # Your GCP bucket name
-
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "deploy"
   deploy:
-    name: Deploy
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
 
-    - name: Authenticate to GCP
-      uses: google-github-actions/auth@v1
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@v0
       with:
-        credentials_json: "${{ secrets.GCP_SA_KEY }}"
+        service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        project_id: github-actions-gcs
 
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-    - name: Deploy to GCP
+    - name: Deploy via GCS
       run: |
-        gsutil -m rsync -d -r ./public gs://${{ env.BUCKET_NAME }}
-        gsutil iam ch allUsers:objectViewer gs://${{ env.BUCKET_NAME }}
-
-    - name: Set website configuration
-      run: |
-        gsutil web set -m index.html -e 404.html gs://${{ env.BUCKET_NAME }}
-
-    - name: Print website URL
-      run: |
-        echo "Your website is now available at: https://storage.googleapis.com/${{ env.BUCKET_NAME }}/index.html"
+        gsutil -m rm -rf gs://${{ env.BUCKET_NAME }}/* || echo "$?"
+        gsutil -m cp -r * gs://${{ env.BUCKET_NAME }}/
