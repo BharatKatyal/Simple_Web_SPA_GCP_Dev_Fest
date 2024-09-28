@@ -17,6 +17,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Debug environment variables
+      run: |
+        echo "PROJECT_ID: ${{ env.PROJECT_ID }}"
+        echo "BUCKET_NAME: ${{ env.BUCKET_NAME }}"
+        echo "FUNCTION_NAME: ${{ env.FUNCTION_NAME }}"
+        echo "REGION: ${{ env.REGION }}"
+
     - uses: google-github-actions/setup-gcloud@v0
       with:
         service_account_key: ${{ secrets.GCP_SA_KEY }}
