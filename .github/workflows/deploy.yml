@@ -8,6 +8,7 @@ env:
   BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
   FUNCTION_NAME: ${{ secrets.FUNCTION_NAME }}
   REGION: ${{ secrets.REGION }}
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
 
 jobs:
   deploy:
@@ -20,7 +21,12 @@ jobs:
       with:
         service_account_email: ${{ secrets.GCP_SA_EMAIL }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
-        project_id: github-actions-gcs
+        project_id: ${{ env.PROJECT_ID }}
+
+    - name: Verify gcloud configuration
+      run: |
+        gcloud config list
+        gcloud projects list
 
     - name: Deploy static files to GCS
       run: |
