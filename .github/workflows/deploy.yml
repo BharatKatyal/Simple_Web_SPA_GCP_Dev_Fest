@@ -6,7 +6,7 @@ on:
 
 env:
   BUCKET_NAME: myprepv2-devfes  # Your GCP bucket name
-  PROJECT_ID: github-actions-gcs  # Your GCP project ID
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # Use a secret for the project ID
 
 jobs:
   deploy:
