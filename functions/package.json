@@ -1,0 +1,9 @@
+{
+    "name": "hello-bharat-function",
+    "version": "1.0.0",
+    "description": "A simple Hello Bharat function",
+    "main": "index.js",
+    "engines": {
+      "node": "18"
+    }
+  }
