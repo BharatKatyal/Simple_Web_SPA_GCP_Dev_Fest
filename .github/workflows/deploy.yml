@@ -3,55 +3,18 @@ name: Deploy to GCP
 on:
   push:
     branches:
-      - main  # Change this to your main branch name
+      - main  # or your default branch name
 
 env:
-  PROJECT_FOLDER: .  # Set this to your project's root folder, use '.' if it's the repository root
-  BUILD_FOLDER: public  # Set this to your build output folder
   BUCKET_NAME: myprepv2-devfes  # Your GCP bucket name
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.14.0
-
-    - name: Install dependencies
-      run: |
-        cd ${{ env.PROJECT_FOLDER }}
-        npm install
-
-    - name: Build project
-      run: |
-        cd ${{ env.PROJECT_FOLDER }}
-        npm run build
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: build
-        path: ${{ env.PROJECT_FOLDER }}/${{ env.BUILD_FOLDER }}
-
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: build
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: build
-        path: ${{ env.BUILD_FOLDER }}
 
     - name: Authenticate to GCP
       uses: google-github-actions/auth@v1
@@ -65,7 +28,7 @@ jobs:
 
     - name: Deploy to GCP
       run: |
-        gsutil -m rsync -d -r ${{ env.BUILD_FOLDER }} gs://${{ env.BUCKET_NAME }}
+        gsutil -m rsync -d -r ./public gs://${{ env.BUCKET_NAME }}
         gsutil iam ch allUsers:objectViewer gs://${{ env.BUCKET_NAME }}
 
     - name: Set website configuration
