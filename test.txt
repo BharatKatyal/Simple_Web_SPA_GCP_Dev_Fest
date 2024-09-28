@@ -40,9 +40,19 @@ SA_EMAIL=$(gcloud iam service-accounts list \
 gsutil iam ch serviceAccount:$SA_EMAIL:objectAdmin gs://$BUCKET_NAME
 
 # Assign roles for Cloud Functions
+# Assign roles to the service account
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SA_EMAIL" \
     --role="roles/cloudfunctions.developer"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA_EMAIL" \
+    --role="roles/iam.serviceAccountUser"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA_EMAIL" \
+    --role="roles/cloudbuild.builds.editor"
+
 
 # Enable necessary APIs
 gcloud services enable cloudfunctions.googleapis.com

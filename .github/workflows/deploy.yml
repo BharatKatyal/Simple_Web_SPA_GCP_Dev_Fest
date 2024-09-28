@@ -1,45 +1,33 @@
 name: Deploy to GCP
 
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
 on:
   push:
     branches: [ main ]
 
 env:
-  BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-  FUNCTION_NAME: ${{ secrets.FUNCTION_NAME }}
-  REGION: ${{ secrets.REGION }}
-  PROJECT_ID: ${{ secrets.PROJECT_ID }}
-
+  BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }} 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "deploy"
   deploy:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    # Setup gcloud CLI
     - uses: google-github-actions/setup-gcloud@v0
       with:
         service_account_email: ${{ secrets.GCP_SA_EMAIL }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
-        project_id: ${{ env.PROJECT_ID }}
+        project_id: github-actions-gcs
 
-    - name: Verify gcloud configuration
-      run: |
-        gcloud config list
-        gcloud projects list
-
-    - name: Deploy static files to GCS
+    - name: Deploy via GCS
       run: |
         gsutil -m rm -rf gs://${{ env.BUCKET_NAME }}/* || echo "$?"
         gsutil -m cp -r public/* gs://${{ env.BUCKET_NAME }}/
-
-    - name: Deploy Cloud Function
-      run: |
-        cd functions
-        gcloud functions deploy ${{ env.FUNCTION_NAME }} \
-          --runtime nodejs18 \
-          --trigger-http \
-          --allow-unauthenticated \
-          --region ${{ env.REGION }} \
-          --source . \
-          --entry-point helloWorld
