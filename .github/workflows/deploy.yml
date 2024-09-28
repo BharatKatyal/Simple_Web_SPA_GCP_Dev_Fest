@@ -30,4 +30,4 @@ jobs:
     - name: Deploy via GCS
       run: |
         gsutil -m rm -rf gs://${{ env.BUCKET_NAME }}/* || echo "$?"
-        gsutil -m cp -r * gs://${{ env.BUCKET_NAME }}/
+        gsutil -m cp -r public/* gs://${{ env.BUCKET_NAME }}/
