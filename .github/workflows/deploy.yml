@@ -1,34 +1,33 @@
-name: Deploy to GCP and Invalidate Cache
+name: Deploy to GCP
 
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
 on:
   push:
     branches: [ main ]
 
 env:
   BUCKET_NAME: myprepv2-devfes  # Your GCP bucket name
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  # Use a secret for the project ID
-
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  # This workflow contains a single job called "deploy"
   deploy:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    # Setup gcloud CLI
     - uses: google-github-actions/setup-gcloud@v0
       with:
         service_account_email: ${{ secrets.GCP_SA_EMAIL }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
-        project_id: ${{ env.PROJECT_ID }}
+        project_id: github-actions-gcs
 
     - name: Deploy via GCS
       run: |
         gsutil -m rm -rf gs://${{ env.BUCKET_NAME }}/* || echo "$?"
-        gsutil -m cp -r public/* gs://${{ env.BUCKET_NAME }}/
-
-    - name: Invalidate CDN Cache
-      run: |
-        gcloud compute url-maps invalidate-cdn-cache ${{ env.BUCKET_NAME }} \
-          --path "/*" \
-          --async \
-          --project ${{ env.PROJECT_ID }}
+        gsutil -m cp -r * gs://${{ env.BUCKET_NAME }}/
